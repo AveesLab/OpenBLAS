@@ -75,7 +75,7 @@ static void sgemmt_trusted(char api, enum CBLAS_ORDER order, char uplo, char tra
                         data_sgemmt.b_test, &ldb, &beta, data_sgemmt.c_gemm, &ldc);
 #ifndef NO_CBLAS
     else
-        cblas_sgemm(order, transa, transb, m, m, k, alpha, data_sgemmt.a_test, lda,
+        cblas_sgemmA(order, transa, transb, m, m, k, alpha, data_sgemmt.a_test, lda,
                 data_sgemmt.b_test, ldb, beta, data_sgemmt.c_gemm, ldc);
 	if (order == CblasRowMajor) {
     if (uplo == 'U' || uplo == CblasUpper)

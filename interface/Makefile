@@ -315,7 +315,7 @@ CSBLAS2OBJS   = \
 	cblas_stbmv.$(SUFFIX) cblas_stbsv.$(SUFFIX) cblas_stpmv.$(SUFFIX) cblas_stpsv.$(SUFFIX)
 
 CSBLAS3OBJS   = \
-	cblas_sgemm.$(SUFFIX) cblas_ssymm.$(SUFFIX) cblas_strmm.$(SUFFIX) cblas_strsm.$(SUFFIX) \
+	cblas_sgemmA.$(SUFFIX) cblas_ssymm.$(SUFFIX) cblas_strmm.$(SUFFIX) cblas_strsm.$(SUFFIX) \
 	cblas_ssyrk.$(SUFFIX) cblas_ssyr2k.$(SUFFIX) cblas_somatcopy.$(SUFFIX)  cblas_simatcopy.$(SUFFIX)\
 	cblas_sgeadd.$(SUFFIX) cblas_sgemmt.$(SUFFIX) cblas_sgemmtr.$(SUFFIX) cblas_sgemm_batch.$(SUFFIX)
 
@@ -2026,7 +2026,7 @@ cblas_chemv.$(SUFFIX) cblas_chemv.$(PSUFFIX) : zhemv.c
 cblas_zhemv.$(SUFFIX) cblas_zhemv.$(PSUFFIX) : zhemv.c
 	$(CC) -DCBLAS -c $(CFLAGS) $< -o $(@F)
 
-cblas_sgemm.$(SUFFIX) cblas_sgemm.$(PSUFFIX) : gemm.c ../param.h
+cblas_sgemmA.$(SUFFIX) cblas_sgemmA.$(PSUFFIX) : gemm.c ../param.h
 	$(CC) -DCBLAS -c $(CFLAGS) $< -o $(@F)
 
 ifeq ($(BUILD_BFLOAT16),1)
