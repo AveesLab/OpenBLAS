@@ -54,7 +54,7 @@ void F77_sgemm(int *order, char *transpa, char *transpb, int *m, int *n,
      for( j=0; j<*n; j++ )
         for( i=0; i<*m; i++ )
            C[i*LDC+j]=c[j*(*ldc)+i];
-     cblas_sgemm( CblasRowMajor, transa, transb, *m, *n, *k, *alpha, A, LDA,
+     cblas_sgemmB( CblasRowMajor, transa, transb, *m, *n, *k, *alpha, A, LDA,
                   B, LDB, *beta, C, LDC );
      for( j=0; j<*n; j++ )
         for( i=0; i<*m; i++ )
@@ -64,10 +64,10 @@ void F77_sgemm(int *order, char *transpa, char *transpb, int *m, int *n,
      free(C);
   }
   else if (*order == TEST_COL_MJR)
-     cblas_sgemm( CblasColMajor, transa, transb, *m, *n, *k, *alpha, a, *lda,
+     cblas_sgemmB( CblasColMajor, transa, transb, *m, *n, *k, *alpha, a, *lda,
                   b, *ldb, *beta, c, *ldc );
   else
-     cblas_sgemm( UNDEFINED, transa, transb, *m, *n, *k, *alpha, a, *lda,
+     cblas_sgemmB( UNDEFINED, transa, transb, *m, *n, *k, *alpha, a, *lda,
                   b, *ldb, *beta, c, *ldc );
 }
 void F77_ssymm(int *order, char *rtlf, char *uplow, int *m, int *n,

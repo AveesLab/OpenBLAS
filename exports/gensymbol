@@ -104,7 +104,7 @@ cblasobjsd="
 
 cblasobjss="
     cblas_sasum cblas_saxpy cblas_saxpby
-    cblas_scopy cblas_sdot cblas_sdsdot cblas_sgbmv cblas_sgemm
+    cblas_scopy cblas_sdot cblas_sdsdot cblas_sgbmv cblas_sgemmB
     cblas_sgemv cblas_sger cblas_snrm2 cblas_srot cblas_srotg
     cblas_srotm cblas_srotmg cblas_ssbmv cblas_sscal cblas_sspmv cblas_sspr2 cblas_sspr
     cblas_sswap cblas_ssymm cblas_ssymv cblas_ssyr2 cblas_ssyr2k cblas_ssyr cblas_ssyrk
