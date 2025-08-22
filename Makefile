@@ -1,5 +1,9 @@
 TOPDIR	= .
 include ./Makefile.system
+LNCMD = ln -fs
+ifeq ($(FIXED_LIBNAME), 1)
+LNCMD = true
+endif
 
 BLASDIRS = interface driver/level2 driver/level3 driver/others
 
@@ -35,7 +39,15 @@ export NO_LAPACK
 export C_LAPACK
 endif
 
+ifeq ($(F_COMPILER),CRAY)
+LAPACK_NOOPT := $(filter-out -O0 -O1 -O2 -O3 -Ofast -Og -Os,$(LAPACK_FFLAGS))
+else
 LAPACK_NOOPT := $(filter-out -O0 -O1 -O2 -O3 -Ofast -O -Og -Os,$(LAPACK_FFLAGS))
+endif
+
+ifdef LAPACK_STRLEN
+LAPACK_FFLAGS += -DLAPACK_STRLEN=$(LAPACK_STRLEN)
+endif
 
 SUBDIRS_ALL = $(SUBDIRS) test ctest utest exports benchmark ../laswp ../bench cpp_thread_test
 
@@ -81,6 +93,11 @@ ifeq ($(NOFORTRAN), $(filter 0,$(NOFORTRAN)))
 	   echo "  Fortran compiler ... $(F_COMPILER)  (command line : $(FC))";\
 	fi
 endif
+
+ifeq ($(OSNAME), WINNT)
+	@-$(LNCMD) $(LIBNAME) $(LIBPREFIX).$(LIBSUFFIX)
+endif
+
 ifneq ($(OSNAME), AIX)
 	@echo -n "  Library Name     ... $(LIBNAME)"
 else
@@ -130,23 +147,26 @@ shared : libs netlib $(RELA)
 ifneq ($(NO_SHARED), 1)
 ifeq ($(OSNAME), $(filter $(OSNAME),Linux SunOS Android Haiku FreeBSD DragonFly))
 	@$(MAKE) -C exports so
-	@ln -fs $(LIBSONAME) $(LIBPREFIX).so
-	@ln -fs $(LIBSONAME) $(LIBPREFIX).so.$(MAJOR_VERSION)
+	@$(LNCMD) $(LIBSONAME) $(LIBPREFIX).so
+	@$(LNCMD) $(LIBSONAME) $(LIBPREFIX).so.$(MAJOR_VERSION)
 endif
 ifeq ($(OSNAME), $(filter $(OSNAME),OpenBSD NetBSD))
 	@$(MAKE) -C exports so
-	@ln -fs $(LIBSONAME) $(LIBPREFIX).so
+	@$(LNCMD) $(LIBSONAME) $(LIBPREFIX).so
 endif
 ifeq ($(OSNAME), Darwin)
 	@$(MAKE) -C exports dyn
-	@ln -fs $(LIBDYNNAME) $(LIBPREFIX).dylib
-	@ln -fs $(LIBDYNNAME) $(LIBPREFIX).$(MAJOR_VERSION).dylib
+	@$(LNCMD) $(LIBDYNNAME) $(LIBPREFIX).dylib
+	@$(LNCMD) $(LIBDYNNAME) $(LIBPREFIX).$(MAJOR_VERSION).dylib
 endif
 ifeq ($(OSNAME), WINNT)
 	@$(MAKE) -C exports dll
 endif
 ifeq ($(OSNAME), CYGWIN_NT)
 	@$(MAKE) -C exports dll
+endif
+ifeq ($(OSNAME), AIX)
+	@$(MAKE) -C exports so
 endif
 endif
 
@@ -206,16 +226,32 @@ ifeq ($(DYNAMIC_OLDER), 1)
 	@echo DYNAMIC_OLDER=1 >> Makefile.conf_last
 endif	
 endif
+	@echo TARGET=$(CORE) >> Makefile.conf_last
 ifdef USE_THREAD
 	@echo USE_THREAD=$(USE_THREAD) >>  Makefile.conf_last
 endif
-	@-ln -fs $(LIBNAME) $(LIBPREFIX).$(LIBSUFFIX)
+ifdef SMP
+ifdef NUM_THREADS
+	@echo NUM_THREADS=$(NUM_THREADS) >>  Makefile.conf_last
+else
+	@echo NUM_THREADS=$(NUM_CORES) >>  Makefile.conf_last
+endif
+endif
+ifeq ($(USE_OPENMP),1)
+	@echo USE_OPENMP=1 >>  Makefile.conf_last
+endif
+ifeq ($(INTERFACE64),1)
+	@echo INTERFACE64=1 >>  Makefile.conf_last
+endif
+	@echo THELIBNAME=$(LIBNAME) >>  Makefile.conf_last
+	@echo THELIBSONAME=$(LIBSONAME) >>  Makefile.conf_last
+	@-$(LNCMD) $(LIBNAME) $(LIBPREFIX).$(LIBSUFFIX)
 	@touch lib.grd
 
 prof : prof_blas prof_lapack
 
 prof_blas :
-	ln -fs $(LIBNAME_P) $(LIBPREFIX)_p.$(LIBSUFFIX)
+	$(LNCMD) $(LIBNAME_P) $(LIBPREFIX)_p.$(LIBSUFFIX)
 	for d in $(SUBDIRS) ; \
 	do if test -d $$d; then \
 	  $(MAKE) -C $$d prof || exit 1 ; \
@@ -226,7 +262,7 @@ ifeq ($(DYNAMIC_ARCH), 1)
 endif
 
 blas :
-	ln -fs $(LIBNAME) $(LIBPREFIX).$(LIBSUFFIX)
+	$(LNCMD) $(LIBNAME) $(LIBPREFIX).$(LIBSUFFIX)
 	for d in $(BLASDIRS) ; \
 	do if test -d $$d; then \
 	  $(MAKE) -C $$d libs || exit 1 ; \
@@ -234,7 +270,7 @@ blas :
 	done
 
 hpl :
-	ln -fs $(LIBNAME) $(LIBPREFIX).$(LIBSUFFIX)
+	$(LNCMD) $(LIBNAME) $(LIBPREFIX).$(LIBSUFFIX)
 	for d in $(BLASDIRS) ../laswp exports ; \
 	do if test -d $$d; then \
 	  $(MAKE) -C $$d $(@F) || exit 1 ; \
@@ -248,7 +284,7 @@ ifeq ($(DYNAMIC_ARCH), 1)
 endif
 
 hpl_p :
-	ln -fs $(LIBNAME_P) $(LIBPREFIX)_p.$(LIBSUFFIX)
+	$(LNCMD) $(LIBNAME_P) $(LIBPREFIX)_p.$(LIBSUFFIX)
 	for d in $(SUBDIRS) ../laswp exports ; \
 	do if test -d $$d; then \
 	  $(MAKE) -C $$d $(@F) || exit 1 ; \
@@ -290,7 +326,11 @@ endif
 ifeq ($(C_COMPILER)$(F_COMPILER)$(USE_OPENMP), CLANGGFORTRAN1)
 	-@echo "LDFLAGS     = $(FFLAGS) $(EXTRALIB) -lomp" >> $(NETLIB_LAPACK_DIR)/make.inc
 else
+ifeq ($(C_COMPILER)$(F_COMPILER)$(USE_OPENMP), CLANGIBM1)
+	-@echo "LDFLAGS     = $(FFLAGS) $(EXTRALIB) -lomp" >> $(NETLIB_LAPACK_DIR)/make.inc
+else
 	-@echo "LDFLAGS     = $(FFLAGS) $(EXTRALIB)" >> $(NETLIB_LAPACK_DIR)/make.inc
+endif
 endif
 	-@echo "CC          = $(CC)" >> $(NETLIB_LAPACK_DIR)/make.inc
 	-@echo "override CFLAGS      = $(LAPACK_CFLAGS)" >> $(NETLIB_LAPACK_DIR)/make.inc
@@ -381,6 +421,7 @@ lapack-runtest: lapack-test
 
 blas-test:
 	(cd $(NETLIB_LAPACK_DIR)/BLAS/TESTING && rm -f x* *.out)
+
 	$(MAKE) -j 1 -C $(NETLIB_LAPACK_DIR) blas_testing
 	(cd $(NETLIB_LAPACK_DIR)/BLAS/TESTING && cat *.out)
 
@@ -389,6 +430,9 @@ dummy :
 
 install :
 	$(MAKE) -f Makefile.install install
+
+install_tests :
+	$(MAKE) -f Makefile.install install_tests
 
 clean ::
 	@for d in $(SUBDIRS_ALL) ; \
@@ -408,7 +452,7 @@ endif
 	@rm -f cblas.tmp cblas.tmp2
 	@touch $(NETLIB_LAPACK_DIR)/make.inc
 	@$(MAKE) -C $(NETLIB_LAPACK_DIR) clean
-	@rm -f $(NETLIB_LAPACK_DIR)/make.inc $(NETLIB_LAPACK_DIR)/lapacke/include/lapacke_mangling.h
+	@rm -f $(NETLIB_LAPACK_DIR)/make.inc
 	@$(MAKE) -C relapack clean
 	@rm -f *.grd Makefile.conf_last config_last.h
 	@(cd $(NETLIB_LAPACK_DIR)/TESTING && rm -f x* *.out testing_results.txt)

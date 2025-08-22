@@ -52,8 +52,8 @@ static inline _Complex double * _pCd(doublecomplex *z) {return (_Complex double*
 #endif
 #define pCf(z) (*_pCf(z))
 #define pCd(z) (*_pCd(z))
-typedef int logical;
-typedef short int shortlogical;
+typedef blasint logical;
+
 typedef char logical1;
 typedef char integer1;
 
@@ -260,7 +260,7 @@ static char junk[] = "\n@(#)LIBF77 VERSION 19990503\n";
 
 /* procedure parameter types for -A and -C++ */
 
-#define F2C_proc_par_types 1
+
 #ifdef __cplusplus
 typedef logical (*L_fp)(...);
 #else
@@ -843,8 +843,9 @@ f"> */
 /* > \ingroup complex16GEeigen */
 
 /*  ===================================================================== */
-/* Subroutine */ void zggesx_(char *jobvsl, char *jobvsr, char *sort, L_fp 
-	selctg, char *sense, integer *n, doublecomplex *a, integer *lda, 
+/* Subroutine */ void zggesx_(char *jobvsl, char *jobvsr, char *sort, logical 
+	(*selctg)(doublecomplex*,doublecomplex*), char *sense, integer *n,
+       	doublecomplex *a, integer *lda, 
 	doublecomplex *b, integer *ldb, integer *sdim, doublecomplex *alpha, 
 	doublecomplex *beta, doublecomplex *vsl, integer *ldvsl, 
 	doublecomplex *vsr, integer *ldvsr, doublereal *rconde, doublereal *

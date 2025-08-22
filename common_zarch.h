@@ -37,15 +37,12 @@ USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #define WMB  
 #define RMB
 
-
-#define INLINE inline
-
 #define RETURN_BY_COMPLEX
 
 #ifndef ASSEMBLER
 
   /*
-static void __inline blas_lock(volatile BLASULONG *address){
+static __inline void blas_lock(volatile BLASULONG *address){
 
   BLASULONG ret;
 
@@ -106,9 +103,16 @@ static inline int blas_quickdivide(blasint x, blasint y){
 	.global	REALNAME ;\
 	.type	REALNAME, %function ;\
 REALNAME:
- 
 
-#define EPILOGUE
+#if defined(__ELF__) && defined(__linux__)
+# define GNUSTACK .section        .note.GNU-stack,"",@progbits
+#else
+# define GNUSTACK
+#endif
+
+#define EPILOGUE \
+        .size    REALNAME, .-REALNAME;	\
+        GNUSTACK
 
 #define PROFCODE
 

@@ -28,27 +28,74 @@ USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #include "common.h"
 
 #if !defined(DOUBLE)
-#define VSETVL(n) vsetvl_e32m4(n)
+#define VSETVL(n) RISCV_RVV(vsetvl_e32m4)(n)
 #define FLOAT_V_T vfloat32m4_t
-#define VLSEV_FLOAT vlse32_v_f32m4
-#define VSSEV_FLOAT vsse32_v_f32m4
-#define VFMACCVF_FLOAT vfmacc_vf_f32m4
-#define VFNMSACVF_FLOAT vfnmsac_vf_f32m4
+#define VLSEV_FLOAT RISCV_RVV(vlse32_v_f32m4)
+#define VSSEV_FLOAT RISCV_RVV(vsse32_v_f32m4)
+#define VFMACCVF_FLOAT RISCV_RVV(vfmacc_vf_f32m4)
+#define VFNMSACVF_FLOAT RISCV_RVV(vfnmsac_vf_f32m4)
 #else
-#define VSETVL(n) vsetvl_e64m4(n)
+#define VSETVL(n) RISCV_RVV(vsetvl_e64m4)(n)
 #define FLOAT_V_T vfloat64m4_t
-#define VLSEV_FLOAT vlse64_v_f64m4
-#define VSSEV_FLOAT vsse64_v_f64m4
-#define VFMACCVF_FLOAT vfmacc_vf_f64m4
-#define VFNMSACVF_FLOAT vfnmsac_vf_f64m4
+#define VLSEV_FLOAT RISCV_RVV(vlse64_v_f64m4)
+#define VSSEV_FLOAT RISCV_RVV(vsse64_v_f64m4)
+#define VFMACCVF_FLOAT RISCV_RVV(vfmacc_vf_f64m4)
+#define VFNMSACVF_FLOAT RISCV_RVV(vfnmsac_vf_f64m4)
 #endif
+
+#if !defined(DOUBLE)
+static inline int  small_caxpy_kernel(BLASLONG n, BLASLONG dummy0, BLASLONG dummy1, FLOAT da_r, FLOAT da_i, FLOAT *x, BLASLONG inc_x, FLOAT *y, BLASLONG inc_y, FLOAT *dummy, BLASLONG dummy2)
+#else
+static inline int  small_zaxpy_kernel(BLASLONG n, BLASLONG dummy0, BLASLONG dummy1, FLOAT da_r, FLOAT da_i, FLOAT *x, BLASLONG inc_x, FLOAT *y, BLASLONG inc_y, FLOAT *dummy, BLASLONG dummy2)
+#endif
+{
+	BLASLONG i=0;
+	BLASLONG ix,iy;
+	BLASLONG inc_x2;
+	BLASLONG inc_y2;
+
+	if ( n <= 0     )  return(0);
+	if ( da_r == 0.0 && da_i == 0.0 ) return(0);
+
+	ix = 0;
+	iy = 0;
+
+	inc_x2 = 2 * inc_x;
+	inc_y2 = 2 * inc_y;
+
+	while(i < n)
+	{
+#if !defined(CONJ)
+		y[iy]   += ( da_r * x[ix]   - da_i * x[ix+1] ) ;
+		y[iy+1] += ( da_r * x[ix+1] + da_i * x[ix]   ) ;
+#else
+		y[iy]   += ( da_r * x[ix]   + da_i * x[ix+1] ) ;
+		y[iy+1] -= ( da_r * x[ix+1] - da_i * x[ix]   ) ;
+#endif
+		ix += inc_x2 ;
+		iy += inc_y2 ;
+		i++ ;
+
+	}
+	return(0);
+
+}
 
 int CNAME(BLASLONG n, BLASLONG dummy0, BLASLONG dummy1, FLOAT da_r, FLOAT da_i, FLOAT *x, BLASLONG inc_x, FLOAT *y, BLASLONG inc_y, FLOAT *dummy, BLASLONG dummy2)
 {
-	BLASLONG i = 0, j = 0;
-	BLASLONG ix = 0,iy = 0;
-	if(n < 0) return(0);
-	if(da_r == 0.0 && da_i == 0.0) return(0);
+#if !defined(DOUBLE)
+        if(n < 16) {
+                return small_caxpy_kernel(n, dummy0, dummy1, da_r, da_i, x, inc_x, y, inc_y, dummy, dummy2);
+        }
+#else
+        if(n < 8) {
+                return small_zaxpy_kernel(n, dummy0, dummy1, da_r, da_i, x, inc_x, y, inc_y, dummy, dummy2);
+        }
+#endif
+        BLASLONG i = 0, j = 0;
+        BLASLONG ix = 0,iy = 0;
+        if(n <= 0) return(0);
+        if(da_r == 0.0 && da_i == 0.0) return(0);
         unsigned int gvl = 0;
         BLASLONG stride_x = inc_x * 2 * sizeof(FLOAT);
         BLASLONG stride_y = inc_y * 2 * sizeof(FLOAT);

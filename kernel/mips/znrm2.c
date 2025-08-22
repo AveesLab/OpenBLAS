@@ -48,12 +48,12 @@ FLOAT CNAME(BLASLONG n, FLOAT *x, BLASLONG inc_x)
 	BLASLONG inc_x2;
 	FLOAT temp;
 
-	if (n <= 0 || inc_x <= 0) return(0.0);
+	if (n <= 0 || inc_x == 0) return(0.0);
 
 	inc_x2 = 2 * inc_x;
 
 	n *= inc_x2;
-	while(i < n)
+	while(abs(i) < abs(n))
 	{
 
 		if ( x[i] != 0.0 )

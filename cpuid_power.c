@@ -131,6 +131,7 @@ int detect(void){
   if (!strncasecmp(p, "POWER8", 6)) return CPUTYPE_POWER8;
   if (!strncasecmp(p, "POWER9", 6)) return CPUTYPE_POWER9;
   if (!strncasecmp(p, "POWER10", 7)) return CPUTYPE_POWER10;
+  if (!strncasecmp(p, "POWER11", 7)) return CPUTYPE_POWER10;
   if (!strncasecmp(p, "Cell",   4)) return CPUTYPE_CELL;
   if (!strncasecmp(p, "7447",   4)) return CPUTYPE_PPCG4;
 
@@ -160,6 +161,7 @@ int detect(void){
   infoCount = HOST_BASIC_INFO_COUNT;
   host_info(mach_host_self(), HOST_BASIC_INFO, (host_info_t)&hostInfo, &infoCount);
 
+  if (hostInfo.cpu_subtype == CPU_SUBTYPE_POWERPC_7400) return CPUTYPE_PPCG4;
   if (hostInfo.cpu_subtype == CPU_SUBTYPE_POWERPC_7450) return CPUTYPE_PPCG4;
   if (hostInfo.cpu_subtype == CPU_SUBTYPE_POWERPC_970)  return CPUTYPE_PPC970;
 
@@ -170,6 +172,9 @@ int detect(void){
 int id;
 __asm __volatile("mfpvr %0" : "=r"(id));
 switch ( id >> 16 ) {
+  case 0x82: // POWER11
+    return CPUTYPE_POWER10;
+    break;
   case 0x80: // POWER10
     return CPUTYPE_POWER10;
     break;

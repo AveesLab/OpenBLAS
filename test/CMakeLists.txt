@@ -22,6 +22,15 @@ if (BUILD_COMPLEX16)
 	list (APPEND OpenBLAS_Tests zblat1 zblat2 zblat3)
 endif()
 
+if (USE_GEMM3M)
+	if (BUILD_COMPLEX)
+		list (APPEND OpenBLAS_Tests cblat3_3m)
+	endif ()
+	if (BUILD_COMPLEX16)
+		list (APPEND OpenBLAS_Tests zblat3_3m)
+	endif ()
+endif ()
+
 foreach(test_bin ${OpenBLAS_Tests})
 	add_executable(${test_bin} ${test_bin}.f)
 target_link_libraries(${test_bin} ${OpenBLAS_LIBNAME})
@@ -78,4 +87,10 @@ add_test(NAME "${float_type}blas2"
   COMMAND ${helper_prefix} $<TARGET_FILE:${float_type}blat2> "${PROJECT_SOURCE_DIR}/test/${float_type}blat2.dat" ${float_type_upper}BLAT2.SUMM)
 add_test(NAME "${float_type}blas3" 
   COMMAND ${helper_prefix} $<TARGET_FILE:${float_type}blat3> "${PROJECT_SOURCE_DIR}/test/${float_type}blat3.dat" ${float_type_upper}BLAT3.SUMM)
+if (USE_GEMM3M)
+if ((${float_type} STREQUAL "c") OR (${float_type} STREQUAL "z"))
+add_test(NAME "${float_type}blas3_3m" 
+  COMMAND ${helper_prefix} $<TARGET_FILE:${float_type}blat3_3m> "${PROJECT_SOURCE_DIR}/test/${float_type}blat3_3m.dat" ${float_type_upper}BLAT3_3M.SUMM)
+endif()
+endif()
 endforeach()

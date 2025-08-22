@@ -1,98 +1,68 @@
+###############################################################################
+# Copyright (c) 2025, The OpenBLAS Project
+# All rights reserved.
+# Redistribution and use in source and binary forms, with or without
+# modification, are permitted provided that the following conditions are
+# met:
+# 1. Redistributions of source code must retain the above copyright
+#    notice, this list of conditions and the following disclaimer.
+# 2. Redistributions in binary form must reproduce the above copyright
+#    notice, this list of conditions and the following disclaimer in
+#    the documentation and/or other materials provided with the
+#    distribution.
+# 3. Neither the name of the OpenBLAS project nor the names of
+#    its contributors may be used to endorse or promote products
+#    derived from this software without specific prior written permission.
+# THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS"
+# AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE
+# IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE
+# ARE DISCLAIMED. IN NO EVENT SHALL THE OPENBLAS PROJECT OR CONTRIBUTORS BE
+# LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR
+# CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF
+# SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS
+# INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN
+# CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE)
+# ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
+# POSSIBILITY OF SUCH DAMAGE.
+###############################################################################
+
 include $(KERNELDIR)/KERNEL.ARMV8SVE
 
-DAXPYKERNEL  = daxpy_thunderx2t99.S
-
-SASUMKERNEL    = sasum_thunderx2t99.c
-DASUMKERNEL    = dasum_thunderx2t99.c
-CASUMKERNEL    = casum_thunderx2t99.c
-ZASUMKERNEL    = zasum_thunderx2t99.c
-
-SCOPYKERNEL    = copy_thunderx2t99.c
-DCOPYKERNEL    = copy_thunderx2t99.c
-CCOPYKERNEL    = copy_thunderx2t99.c
-ZCOPYKERNEL    = copy_thunderx2t99.c
-
-SSWAPKERNEL    = swap_thunderx2t99.S
-DSWAPKERNEL    = swap_thunderx2t99.S
-CSWAPKERNEL    = swap_thunderx2t99.S
-ZSWAPKERNEL    = swap_thunderx2t99.S
-
-ISAMAXKERNEL   = iamax_thunderx2t99.c
-IDAMAXKERNEL   = iamax_thunderx2t99.c
-ICAMAXKERNEL   = izamax_thunderx2t99.c
-IZAMAXKERNEL   = izamax_thunderx2t99.c
-
-SNRM2KERNEL    = scnrm2_thunderx2t99.c
-DNRM2KERNEL    = dznrm2_thunderx2t99.c
-CNRM2KERNEL    = scnrm2_thunderx2t99.c
-ZNRM2KERNEL    = dznrm2_thunderx2t99.c
-
-DDOTKERNEL     = dot.c
-SDOTKERNEL     = dot.c
-CDOTKERNEL     = zdot_thunderx2t99.c
-ZDOTKERNEL     = zdot_thunderx2t99.c
-
-CTRSMKERNEL_LN  = ../generic/trsm_kernel_LN.c
-CTRSMKERNEL_LT  = ../generic/trsm_kernel_LT.c
-CTRSMKERNEL_RN  = ../generic/trsm_kernel_RN.c
-CTRSMKERNEL_RT  = ../generic/trsm_kernel_RT.c
-
-CTRMMUNCOPY_M  =
-CTRMMLNCOPY_M  =
-CTRMMUTCOPY_M  =
-CTRMMLTCOPY_M  =
-CHEMMLTCOPY_M  =
-CHEMMUTCOPY_M  =
-CSYMMUCOPY_M   =
-CSYMMLCOPY_M   =
-
-CGEMMKERNEL    =  cgemm_kernel_$(CGEMM_UNROLL_M)x$(CGEMM_UNROLL_N).S
-CTRMMKERNEL    =  ctrmm_kernel_$(CGEMM_UNROLL_M)x$(CGEMM_UNROLL_N).S
-ifneq ($(CGEMM_UNROLL_M), $(CGEMM_UNROLL_N))
-CGEMMINCOPY    =  ../generic/zgemm_ncopy_$(CGEMM_UNROLL_M).c
-CGEMMITCOPY    =  ../generic/zgemm_tcopy_$(CGEMM_UNROLL_M).c
-CGEMMINCOPYOBJ =  cgemm_incopy$(TSUFFIX).$(SUFFIX)
-CGEMMITCOPYOBJ =  cgemm_itcopy$(TSUFFIX).$(SUFFIX)
-else
-CGEMMINCOPYOBJ =
-CGEMMITCOPYOBJ =
+SGEMVNKERNEL = gemv_n_sve_v1x3.c
+DGEMVNKERNEL = gemv_n_sve_v1x3.c
+SGEMVTKERNEL = gemv_t_sve_v1x3.c
+DGEMVTKERNEL = gemv_t_sve_v1x3.c
+ifeq ($(BUILD_BFLOAT16), 1)
+BGEMM_BETA    =  bgemm_beta_neon.c
+BGEMMKERNEL    = bgemm_kernel_2vlx4_neoversev1.c
+ifneq ($(BGEMM_UNROLL_M), $(BGEMM_UNROLL_N))
+BGEMMINCOPY    = bgemm_ncopy_2vl_neoversev1.c
+BGEMMITCOPY    = bgemm_tcopy_2vl_neoversev1.c
+BGEMMINCOPYOBJ =  bgemm_incopy$(TSUFFIX).$(SUFFIX)
+BGEMMITCOPYOBJ =  bgemm_itcopy$(TSUFFIX).$(SUFFIX)
 endif
-CGEMMONCOPY    =  ../generic/zgemm_ncopy_$(CGEMM_UNROLL_N).c
-CGEMMOTCOPY    =  ../generic/zgemm_tcopy_$(CGEMM_UNROLL_N).c
-CGEMMONCOPYOBJ =  cgemm_oncopy$(TSUFFIX).$(SUFFIX)
-CGEMMOTCOPYOBJ =  cgemm_otcopy$(TSUFFIX).$(SUFFIX)
+BGEMMONCOPY    = bgemm_ncopy_4_neoversev1.c
+BGEMMOTCOPY    = bgemm_tcopy_4_neoversev1.c
+BGEMMONCOPYOBJ =  bgemm_oncopy$(TSUFFIX).$(SUFFIX)
+BGEMMOTCOPYOBJ =  bgemm_otcopy$(TSUFFIX).$(SUFFIX)
 
-ZTRSMKERNEL_LN  = ../generic/trsm_kernel_LN.c
-ZTRSMKERNEL_LT  = ../generic/trsm_kernel_LT.c
-ZTRSMKERNEL_RN  = ../generic/trsm_kernel_RN.c
-ZTRSMKERNEL_RT  = ../generic/trsm_kernel_RT.c
+BGEMVTKERNEL = sbgemv_t_bfdot.c
+BGEMVNKERNEL = bgemv_n_sve_v3x4.c
 
-ZTRSMCOPYLN_M    =
-ZTRSMCOPYLT_M    =
-ZTRSMCOPYUN_M    =
-ZTRSMCOPYUT_M    =
-
-ZTRMMUNCOPY_M  =
-ZTRMMLNCOPY_M  =
-ZTRMMUTCOPY_M  =
-ZTRMMLTCOPY_M  =
-ZHEMMLTCOPY_M  =
-ZHEMMUTCOPY_M  =
-ZSYMMUCOPY_M   =
-ZSYMMLCOPY_M   =
-
-ZGEMMKERNEL    =  zgemm_kernel_$(ZGEMM_UNROLL_M)x$(ZGEMM_UNROLL_N).S
-ZTRMMKERNEL    =  ztrmm_kernel_$(ZGEMM_UNROLL_M)x$(ZGEMM_UNROLL_N).S
-ifneq ($(ZGEMM_UNROLL_M), $(ZGEMM_UNROLL_N))
-ZGEMMINCOPY    =  ../generic/zgemm_ncopy_$(ZGEMM_UNROLL_M).c
-ZGEMMITCOPY    =  ../generic/zgemm_tcopy_$(ZGEMM_UNROLL_M).c
-ZGEMMINCOPYOBJ =  zgemm_incopy$(TSUFFIX).$(SUFFIX)
-ZGEMMITCOPYOBJ =  zgemm_itcopy$(TSUFFIX).$(SUFFIX)
-else
-ZGEMMINCOPYOBJ =
-ZGEMMITCOPYOBJ =
+SBGEMM_BETA    =  sbgemm_beta_neoversev1.c
+SBGEMMKERNEL    = bgemm_kernel_2vlx4_neoversev1.c
+ifneq ($(SBGEMM_UNROLL_M), $(SBGEMM_UNROLL_N))
+SBGEMMINCOPY    = bgemm_ncopy_2vl_neoversev1.c
+SBGEMMITCOPY    = bgemm_tcopy_2vl_neoversev1.c
+SBGEMMINCOPYOBJ =  sbgemm_incopy$(TSUFFIX).$(SUFFIX)
+SBGEMMITCOPYOBJ =  sbgemm_itcopy$(TSUFFIX).$(SUFFIX)
 endif
-ZGEMMONCOPY    =  ../generic/zgemm_ncopy_$(ZGEMM_UNROLL_N).c
-ZGEMMOTCOPY    =  ../generic/zgemm_tcopy_$(ZGEMM_UNROLL_N).c
-ZGEMMONCOPYOBJ =  zgemm_oncopy$(TSUFFIX).$(SUFFIX)
-ZGEMMOTCOPYOBJ =  zgemm_otcopy$(TSUFFIX).$(SUFFIX)
+SBGEMMONCOPY    = bgemm_ncopy_4_neoversev1.c
+SBGEMMOTCOPY    = bgemm_tcopy_4_neoversev1.c
+SBGEMMONCOPYOBJ =  sbgemm_oncopy$(TSUFFIX).$(SUFFIX)
+SBGEMMOTCOPYOBJ =  sbgemm_otcopy$(TSUFFIX).$(SUFFIX)
+
+SBGEMVNKERNEL = sbgemv_n_neon.c
+SBGEMVTKERNEL = sbgemv_t_bfdot.c
+
+endif

@@ -1,5 +1,6 @@
 /*********************************************************************/
 /* Copyright 2009, 2010 The University of Texas at Austin.           */
+/* Copyright 2025 The OpenBLAS Project.                              */
 /* All rights reserved.                                              */
 /*                                                                   */
 /* Redistribution and use in source and binary forms, with or        */
@@ -266,6 +267,14 @@ typedef uint16_t bfloat16;
 #define BFLOAT16CONVERSION 1
 #endif
 
+#ifdef BUILD_HFLOAT16
+  #ifndef hfloat16
+  typedef _Float16 hfloat16;
+  #endif
+#else
+  typedef uint16_t hfloat16;
+#endif
+
 #ifdef USE64BITINT
 typedef BLASLONG blasint;
 #if defined(OS_WINDOWS) && defined(__64BIT__)
@@ -309,8 +318,19 @@ typedef int blasint;
 #elif defined(BFLOAT16)
 #define IFLOAT	bfloat16
 #define XFLOAT IFLOAT
-#define FLOAT	float
+#ifdef BGEMM
+#define FLOAT	bfloat16
+#else
+#define FLOAT float
+#endif
 #define SIZE   2
+#define BASE_SHIFT 1
+#define ZBASE_SHIFT 2
+#elif defined(HFLOAT16)
+#define IFLOAT	hfloat16
+#define XFLOAT	IFLOAT
+#define FLOAT	float
+#define SIZE	2
 #define BASE_SHIFT 1
 #define ZBASE_SHIFT 2
 #else
@@ -358,12 +378,6 @@ typedef int blasint;
 #define YIELDING        __asm__ __volatile__ ("nop;nop;nop;nop;nop;nop;nop;nop; \n");
 #endif
 
-#ifdef BULLDOZER
-#ifndef YIELDING
-#define YIELDING        __asm__ __volatile__ ("nop;nop;nop;nop;nop;nop;nop;nop;\n");
-#endif
-#endif
-
 
 #if defined(POWER8) || defined(POWER9) || defined(POWER10)
 #ifndef YIELDING
@@ -371,21 +385,19 @@ typedef int blasint;
 #endif
 #endif
 
-/*
-#ifdef PILEDRIVER
-#ifndef YIELDING
-#define YIELDING        __asm__ __volatile__ ("nop;nop;nop;nop;nop;nop;nop;nop;\n");
-#endif
-#endif
-*/
 
-/*
-#ifdef STEAMROLLER
+#if defined(ARCH_X86_64)
 #ifndef YIELDING
 #define YIELDING        __asm__ __volatile__ ("nop;nop;nop;nop;nop;nop;nop;nop;\n");
 #endif
 #endif
-*/
+
+#if defined(ARCH_RISCV64)
+#ifndef YIELDING
+#define YIELDING        __asm__ __volatile__ ("nop;nop;nop;nop;nop;nop;nop;nop;\n");
+#endif
+#endif
+
 
 #ifdef __EMSCRIPTEN__
 #define YIELDING
@@ -396,7 +408,7 @@ typedef int blasint;
 #endif
 
 /***
-To alloc job_t on heap or statck.
+To alloc job_t on heap or stack.
 please https://github.com/xianyi/OpenBLAS/issues/246
 ***/
 #if defined(OS_WINDOWS)
@@ -482,6 +494,10 @@ please https://github.com/xianyi/OpenBLAS/issues/246
 #include "common_e2k.h"
 #endif
 
+#ifdef ARCH_CSKY
+#include "common_csky.h"
+#endif
+
 #ifndef ASSEMBLER
 #ifdef OS_WINDOWSSTORE
 typedef char env_var_t[MAX_PATH];
@@ -525,7 +541,7 @@ static inline unsigned long long rpcc(void){
 #endif // !RPCC_DEFINED
 
 #if !defined(BLAS_LOCK_DEFINED) && defined(__GNUC__)
-static void __inline blas_lock(volatile BLASULONG *address){
+static __inline void blas_lock(volatile BLASULONG *address){
 
   do {
     while (*address) {YIELDING;};
@@ -706,6 +722,7 @@ void gotoblas_profile_init(void);
 void gotoblas_profile_quit(void);
 	
 int support_avx512(void);	
+int support_sme1(void);	
 
 #ifdef USE_OPENMP
 

@@ -13,9 +13,9 @@ met:
       notice, this list of conditions and the following disclaimer in
       the documentation and/or other materials provided with the
       distribution.
-   3. Neither the name of the OpenBLAS project nor the names of 
-      its contributors may be used to endorse or promote products 
-      derived from this software without specific prior written 
+   3. Neither the name of the OpenBLAS project nor the names of
+      its contributors may be used to endorse or promote products
+      derived from this software without specific prior written
       permission.
 
 THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS"
@@ -63,19 +63,22 @@ static char* openblas_config_str=""
 #ifdef USE_TLS
   "USE_TLS "
 #endif
+#ifdef USE_LOCKING
+  "USE_LOCKING "
+#endif
 #ifndef DYNAMIC_ARCH
   CHAR_CORENAME
 #endif
   ;
 
 #ifdef DYNAMIC_ARCH
-char *gotoblas_corename();
+char *gotoblas_corename(void);
 #endif
 
 static char tmp_config_str[256];
-int openblas_get_parallel();
+int openblas_get_parallel(void);
 
-char* CNAME() {
+char* CNAME(void) {
 char tmpstr[20];
   strcpy(tmp_config_str, openblas_config_str);
 #ifdef DYNAMIC_ARCH
@@ -83,15 +86,15 @@ char tmpstr[20];
 #endif
   if (openblas_get_parallel() == 0)
     sprintf(tmpstr, " SINGLE_THREADED");
-  else 
+  else
     snprintf(tmpstr,19," MAX_THREADS=%d",MAX_CPU_NUMBER);
   strcat(tmp_config_str, tmpstr);
   return tmp_config_str;
 }
 
 
-char* openblas_get_corename() {
-#ifndef DYNAMIC_ARCH 
+char* openblas_get_corename(void) {
+#ifndef DYNAMIC_ARCH
   return CHAR_CORENAME;
 #else
   return gotoblas_corename();

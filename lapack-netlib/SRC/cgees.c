@@ -52,8 +52,8 @@ static inline _Complex double * _pCd(doublecomplex *z) {return (_Complex double*
 #endif
 #define pCf(z) (*_pCf(z))
 #define pCd(z) (*_pCd(z))
-typedef int logical;
-typedef short int shortlogical;
+typedef blasint logical;
+
 typedef char logical1;
 typedef char integer1;
 
@@ -260,7 +260,7 @@ static char junk[] = "\n@(#)LIBF77 VERSION 19990503\n";
 
 /* procedure parameter types for -A and -C++ */
 
-#define F2C_proc_par_types 1
+
 #ifdef __cplusplus
 typedef logical (*L_fp)(...);
 #else
@@ -710,8 +710,8 @@ or GE matrices</b> */
 /* > \ingroup complexGEeigen */
 
 /*  ===================================================================== */
-/* Subroutine */ void cgees_(char *jobvs, char *sort, L_fp select, integer *n, 
-	complex *a, integer *lda, integer *sdim, complex *w, complex *vs, 
+/* Subroutine */ void cgees_(char *jobvs, char *sort, logical (*select)(complex*),
+	integer *n, complex *a, integer *lda, integer *sdim, complex *w, complex *vs, 
 	integer *ldvs, complex *work, integer *lwork, real *rwork, logical *
 	bwork, integer *info)
 {

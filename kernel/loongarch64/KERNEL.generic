@@ -132,12 +132,16 @@ CSWAPKERNEL  = ../arm/zswap.c
 ZSWAPKERNEL  = ../arm/zswap.c
 
 SGEMVNKERNEL = ../arm/gemv_n.c
+ifndef DGEMVNKERNEL
 DGEMVNKERNEL = ../arm/gemv_n.c
+endif
 CGEMVNKERNEL = ../arm/zgemv_n.c
 ZGEMVNKERNEL = ../arm/zgemv_n.c
 
 SGEMVTKERNEL = ../arm/gemv_t.c
+ifndef DGEMVTKERNEL
 DGEMVTKERNEL = ../arm/gemv_t.c
+endif
 CGEMVTKERNEL = ../arm/zgemv_t.c
 ZGEMVTKERNEL = ../arm/zgemv_t.c
 
@@ -165,3 +169,15 @@ QCABS_KERNEL   = ../generic/cabs.c
 #Dump kernel
 CGEMM3MKERNEL  = ../generic/zgemm3mkernel_dump.c
 ZGEMM3MKERNEL  = ../generic/zgemm3mkernel_dump.c
+
+ifndef SROTMKERNEL
+SROTMKERNEL = ../generic/rotm.c
+endif
+
+ifndef DROTMKERNEL
+DROTMKERNEL = ../generic/rotm.c
+endif
+
+ifndef QROTMKERNEL
+QROTMKERNEL = ../generic/rotm.c
+endif
