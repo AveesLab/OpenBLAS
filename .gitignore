@@ -31,10 +31,10 @@ lapack-netlib/TESTING/xlintstrfz
 lapack-netlib/TESTING/xlintsts
 lapack-netlib/TESTING/xlintstz
 lapack-netlib/TESTING/xlintstzc
-#*.so
-#*.so.*
-#*.a
-#.svn
+*.so
+*.so.*
+*.a
+.svn
 *~
 lib.grd
 nohup.out

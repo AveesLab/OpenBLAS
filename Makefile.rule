@@ -8,7 +8,7 @@ VERSION = 0.3.30.dev
 # If you set this prefix, the library name will be lib$(LIBNAMESUFFIX)openblas.a
 # and lib$(LIBNAMESUFFIX)openblas.so, with a matching soname in the shared library
 # 
-# LIBNAMEPREFIX = scipy
+LIBNAMEPREFIX = C
 
 # If you set the suffix, the library name will be libopenblas_$(LIBNAMESUFFIX).a
 # and libopenblas_$(LIBNAMESUFFIX).so. Meanwhile, the soname in shared library
